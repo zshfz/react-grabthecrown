@@ -1,0 +1,45 @@
+@import "./colors.scss";
+@import "./mixins.scss";
+
+.modal-component {
+  width: 350px;
+  background-color: $background-color;
+  border-radius: 11px;
+  border: 1px solid $color;
+  .modal-header {
+    background-color: $color;
+    text-align: center;
+    padding: 5px;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .modal-body {
+    .modal-body-title {
+      padding: 5px;
+      .triangle-icon {
+        width: 20px;
+      }
+    }
+
+    .modal-body-dropdown {
+      margin: 5px;
+      border: 1px solid #ccc;
+      padding: 10px;
+
+      .modal-body-input {
+        width: 100%;
+        padding: 10px;
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 5px;
+    display: flex;
+    justify-content: flex-end;
+
+    .modal-footer-button {
+      @include button-style;
+    }
+  }
+}

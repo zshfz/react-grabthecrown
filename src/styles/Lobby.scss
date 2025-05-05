@@ -1,0 +1,147 @@
+@import "./colors.scss";
+@import "./mixins.scss";
+
+.lobby {
+  display: flex;
+  gap: 10px;
+
+  .lobby-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 75vh;
+    gap: 10px;
+
+    .lobby-banner {
+      display: flex;
+      justify-content: center;
+      .lobby-banner-image {
+        width: 250px;
+      }
+    }
+
+    .lobby-current-user {
+      text-align: center;
+      border-top: 1px solid $divider-color;
+      border-bottom: 1px solid $divider-color;
+      padding: 5px;
+    }
+
+    .lobby-ranking {
+      border: 1px solid $color;
+      border-radius: 11px 10px;
+      height: 100%;
+      overflow-y: auto;
+      .lobby-h5 {
+        background-color: $color;
+        border-radius: 10px 10px 0 0;
+        padding: 5px;
+        text-align: center;
+      }
+
+      .lobby-ranking-list {
+        list-style: none;
+
+        .lobby-ranking-list-li {
+          padding: 10px;
+          display: flex;
+          align-items: center;
+
+          .lobby-ranking-list-left {
+            flex: 1;
+          }
+
+          .lobby-ranking-list-center {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            .lobby-ranking-list-center-image {
+              width: 30px;
+              border-radius: 50%;
+              border: 1px solid #ccc;
+            }
+          }
+
+          .lobby-ranking-list-right {
+            flex: 1;
+          }
+        }
+      }
+    }
+
+    .lobby-users {
+      border: 1px solid $color;
+      border-radius: 11px 10px;
+      height: 100%;
+      overflow-y: auto;
+      .lobby-h5 {
+        background-color: $color;
+        border-radius: 10px 10px 0 0;
+        padding: 5px;
+        text-align: center;
+      }
+
+      .lobby-users-list {
+        .lobby-users-list-li {
+          margin: 10px;
+          display: flex;
+          align-items: center;
+          .lobby-users-list-center-image {
+            width: 30px;
+            border-radius: 50%;
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+
+    .lobby-button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      .lobby-make-button {
+        @include blue-button-style;
+      }
+
+      .lobby-logout-button {
+        @include red-button-style;
+      }
+    }
+  }
+
+  .lobby-right {
+    flex: 3;
+    border: 1px solid $color;
+    border-radius: 11px 11px 10px 10px;
+
+    .lobby-h5 {
+      text-align: center;
+      background-color: $color;
+      padding: 10px;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .lobby-room-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px;
+    }
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 80vw;
+  height: 80vh;
+  backdrop-filter: blur(1px); // 흐릿하게
+  background-color: rgba(0, 0, 0, 0.4); // 어둡게
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}

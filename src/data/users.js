@@ -1,0 +1,81 @@
+const users = [
+  {
+    UID: 1,
+    USERNAME: "jeongmin",
+    PASSWORD: "1234",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 3,
+  },
+  {
+    UID: 2,
+    USERNAME: "alice",
+    PASSWORD: "alicepwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 5,
+  },
+  {
+    UID: 3,
+    USERNAME: "bob",
+    PASSWORD: "bobpwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 1,
+  },
+  {
+    UID: 4,
+    USERNAME: "charlie",
+    PASSWORD: "charliepwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 2,
+  },
+  {
+    UID: 5,
+    USERNAME: "diana",
+    PASSWORD: "dianapwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 4,
+  },
+  {
+    UID: 6,
+    USERNAME: "edward",
+    PASSWORD: "edwardpwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 0,
+  },
+  {
+    UID: 7,
+    USERNAME: "fiona",
+    PASSWORD: "fionapwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 6,
+  },
+  {
+    UID: 8,
+    USERNAME: "george",
+    PASSWORD: "georgepwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 2,
+  },
+  {
+    UID: 9,
+    USERNAME: "hannah",
+    PASSWORD: "hannahpwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 1,
+  },
+  {
+    UID: 10,
+    USERNAME: "ian",
+    PASSWORD: "ianpwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 0,
+  },
+  {
+    UID: 11,
+    USERNAME: "julia",
+    PASSWORD: "juliapwd",
+    PROFILE_IMG: "/profileImage.jpg",
+    CROWN_CNT: 3,
+  },
+];
+
+export default users;

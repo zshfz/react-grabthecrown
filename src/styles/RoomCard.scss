@@ -1,0 +1,41 @@
+@import "./colors.scss";
+
+.room-card {
+  background-color: $background-color;
+  border: 1px solid $color;
+  border-radius: 10px;
+  width: 45%;
+  margin-left: 25px;
+  display: flex;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  background-blend-mode: multiply;
+  background-image: url("/crownBackground.jpg");
+  background-size: cover;
+
+  &:hover {
+    background-color: #ffe0b2;
+    transform: scale(1.02);
+    cursor: pointer;
+  }
+
+  .room-card-left {
+    flex: 1;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .room-card-center {
+    flex: 2;
+    text-align: center;
+    border-left: 1px solid $color;
+    border-right: 1px solid $color;
+    padding: 20px;
+  }
+
+  .room-card-right {
+    flex: 1;
+    text-align: center;
+    padding: 20px;
+  }
+}

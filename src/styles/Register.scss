@@ -1,0 +1,58 @@
+@import "./mixins.scss";
+
+.register {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .register-h2 {
+    margin: 10px;
+  }
+
+  .register-h6 {
+    margin-bottom: 30px;
+  }
+
+  .register-input-container {
+    display: flex;
+    align-items: center;
+
+    .register-input-container-left {
+      display: flex;
+      flex-direction: column;
+
+      .register-nickname,
+      .register-password {
+        @include input-style;
+      }
+    }
+
+    .register-input-container-right {
+      .register-profile,
+      .register-placeholder {
+        width: 80px;
+        height: 80px;
+        padding: 5px;
+        border-radius: 50%;
+        object-fit: cover;
+        background-color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid $color;
+        color: gray;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .register-re-password {
+    @include input-style;
+    width: 250px;
+  }
+
+  .register-button {
+    @include button-style;
+    width: 250px;
+  }
+}

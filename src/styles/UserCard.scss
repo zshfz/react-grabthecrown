@@ -1,0 +1,43 @@
+@import "./colors.scss";
+
+.user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #ccc;
+  background-color: white;
+  border-radius: 10px;
+  margin: 0 10px;
+  width: 150px;
+  gap: 10px;
+  .user-card-image {
+    width: 130px;
+    border-radius: 50%;
+    margin: 5px;
+  }
+
+  .user-card-score {
+    padding: 5px;
+  }
+}
+
+.user-card-highlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid $color;
+  background-color: $background-color;
+  border-radius: 10px;
+
+  width: 150px;
+  gap: 10px;
+  .user-card-image {
+    width: 130px;
+    border-radius: 50%;
+    margin: 5px;
+  }
+
+  .user-card-score {
+    padding: 5px;
+  }
+}

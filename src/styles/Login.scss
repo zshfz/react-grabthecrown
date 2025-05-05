@@ -1,0 +1,26 @@
+@import "./mixins.scss";
+
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .login-h2 {
+    margin: 10px;
+  }
+
+  .login-h6 {
+    margin-bottom: 30px;
+  }
+
+  .login-nickname,
+  .login-password {
+    @include input-style;
+    width: 240px;
+  }
+
+  .login-button {
+    @include button-style;
+    width: 240px;
+  }
+}

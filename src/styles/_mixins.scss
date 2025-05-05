@@ -1,0 +1,82 @@
+@import "./colors.scss";
+
+@mixin input-focus-style {
+  border: 1px solid $input-focus-color;
+  box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+  outline: none;
+}
+
+@mixin button-hover-style {
+  background-color: $hover-color;
+  transform: scale(1.02);
+}
+
+@mixin red-button-hover-style {
+  background-color: #c42626;
+  transform: scale(1.02);
+}
+
+@mixin blue-button-hover-style {
+  background-color: rgb(41, 41, 158);
+  transform: scale(1.02);
+}
+
+@mixin input-style {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: rgba(255, 255, 255, 0.9);
+  transition: border 0.3s, box-shadow 0.3s;
+
+  &:focus {
+    @include input-focus-style;
+  }
+}
+
+@mixin button-style {
+  background-color: $color;
+  color: white;
+  font-weight: bold;
+  margin: 5px;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    @include button-hover-style;
+  }
+}
+
+@mixin red-button-style {
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  padding: 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  &:hover {
+    @include red-button-hover-style;
+  }
+}
+
+@mixin blue-button-style {
+  background-color: blue;
+  color: white;
+  font-weight: bold;
+  padding: 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  &:hover {
+    @include blue-button-hover-style;
+  }
+}

@@ -1,0 +1,28 @@
+@import "./colors.scss";
+
+.background {
+  background-color: $background-color;
+  height: 100vh;
+  z-index: -1;
+}
+
+.crown {
+  position: absolute;
+  width: 45px;
+  opacity: 0.5;
+  animation: floatXY ease-in-out infinite alternate;
+  --rangeX: 50px;
+  --rangeY: 50px;
+}
+
+@keyframes floatXY {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  50% {
+    transform: translate(var(--rangeX), calc(var(--rangeY) * -1));
+  }
+  100% {
+    transform: translate(calc(var(--rangeX) * -1), var(--rangeY));
+  }
+}

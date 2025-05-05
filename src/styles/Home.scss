@@ -1,0 +1,28 @@
+@import "./colors.scss";
+
+.home {
+  .home-top {
+    display: flex;
+    justify-content: center;
+
+    .home-banner {
+      width: 350px;
+    }
+  }
+
+  .home-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 100px;
+
+    .home-divider {
+      position: absolute;
+      left: 50%;
+      top: 170px;
+      bottom: 30px;
+      width: 1px;
+      background-color: $divider-color;
+    }
+  }
+}
