@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import socket from "../socket";
 
 export const AuthContext = createContext();
 
@@ -33,6 +34,9 @@ export const AuthProvider = ({ children }) => {
   const login = (userData, token) => {
     localStorage.setItem("token", token);
     setUser(userData);
+
+    socket.auth = { token }; // 🔑 토큰 재설정
+    socket.connect();
   };
 
   const logout = () => {

@@ -124,11 +124,13 @@
       border-radius: 10px 10px 0 0;
     }
 
-    .lobby-room-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 5px;
+    .lobby-room-list-container {
+      .lobby-room-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 5px;
+      }
     }
   }
 }

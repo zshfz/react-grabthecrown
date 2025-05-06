@@ -7,6 +7,7 @@ import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
+import socket from "../socket";
 
 const Lobby = () => {
   const API = import.meta.env.VITE_API_URL;
@@ -15,8 +16,36 @@ const Lobby = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [ranking, setRanking] = useState([]);
+  const [rooms, setRooms] = useState([]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    socket.on("room_created", (roomInfo) => {
+      console.log("✅ 방 생성됨:", roomInfo);
+      navigate(`/chat-room/${roomInfo.roomId}`);
+    });
+
+    socket.on("room_state_update", (updatedRoom) => {
+      setRooms((prev) => {
+        const exists = prev.find((r) => r.roomId === updatedRoom.roomId);
+        return exists
+          ? prev.map((r) => (r.roomId === updatedRoom.roomId ? updatedRoom : r))
+          : [...prev, updatedRoom];
+      });
+    });
+
+    socket.on("joined_room", ({ roomId }) => {
+      console.log("🎯 방 입장 성공:", roomId);
+      navigate(`/chat-room/${roomId}`);
+    });
+
+    return () => {
+      socket.off("room_created");
+      socket.off("room_state_update");
+      socket.off("joined_room");
+    };
+  }, [navigate]);
 
   useEffect(() => {
     const fetchRanking = async () => {
@@ -31,8 +60,28 @@ const Lobby = () => {
       }
     };
 
+    const fetchRooms = async () => {
+      try {
+        const res = await axios.get(`${API}/gameroom`);
+        setRooms(res.data);
+      } catch (err) {
+        console.error("방 목록 조회 실패:", err);
+      }
+    };
+
     fetchRanking();
+    fetchRooms();
   }, []);
+
+  const handleCreateRoom = (totalPlayer) => {
+    console.log("🟨 생성 버튼 클릭됨", totalPlayer); // 디버깅 로그
+    socket.emit("create_room", { totalPlayer });
+    setShowModal(false);
+  };
+
+  const handleJoinRoom = (roomId) => {
+    socket.emit("join_room", { roomId });
+  };
 
   return (
     <>
@@ -106,9 +155,19 @@ const Lobby = () => {
         </div>
         <div className="lobby-right">
           <h5 className="lobby-h5">방 목록</h5>
-          <div className="lobby-room-list">
-            {gameRoom.map((a) => {
-              return <RoomCard key={a.GID} a={a} />;
+          <div className="lobby-room-list-container">
+            {rooms.map((a) => {
+              return (
+                <div
+                  className="lobby-room-list"
+                  key={a.roomId}
+                  onClick={() => {
+                    handleJoinRoom(a.roomId);
+                  }}
+                >
+                  <RoomCard a={a} />
+                </div>
+              );
             })}
           </div>
         </div>
@@ -119,6 +178,7 @@ const Lobby = () => {
             onClose={() => {
               setShowModal(false);
             }}
+            onCreate={handleCreateRoom}
           />
         </div>
       )}
