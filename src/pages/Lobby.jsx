@@ -3,17 +3,36 @@ import "../styles/Lobby.scss";
 import users from "../data/users"; //더미데이터
 import gameRoom from "../data/gameRoom"; //더미데이터
 import ModalComponent from "../components/ModalComponent";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import axios from "axios";
 
 const Lobby = () => {
+  const API = import.meta.env.VITE_API_URL;
+
   const { user, logout } = useContext(AuthContext);
 
-  const sortedUsers = [...users].sort((a, b) => b.CROWN_CNT - a.CROWN_CNT); // 왕관 수 내림차순
   const [showModal, setShowModal] = useState(false);
+  const [ranking, setRanking] = useState([]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchRanking = async () => {
+      try {
+        const res = await axios.get(`${API}/ranking`);
+        setRanking(res.data);
+      } catch (err) {
+        console.error(
+          "랭킹 조회 실패:",
+          err.response?.data?.message || err.message
+        );
+      }
+    };
+
+    fetchRanking();
+  }, []);
 
   return (
     <>
@@ -32,14 +51,14 @@ const Lobby = () => {
           <div className="lobby-ranking">
             <h5 className="lobby-h5">랭킹</h5>
             <ul className="lobby-ranking-list">
-              {sortedUsers.map((a, i) => {
+              {ranking.map((a, i) => {
                 return (
-                  <li className="lobby-ranking-list-li" key={a.UID}>
+                  <li className="lobby-ranking-list-li" key={i}>
                     <div className="lobby-ranking-list-left">{i + 1}위</div>
                     <div className="lobby-ranking-list-center">
                       <img
                         className="lobby-ranking-list-center-image"
-                        src={a.PROFILE_IMG}
+                        src={`${API}${a.PROFILE_IMG}`}
                       />
                       {a.USERNAME}
                     </div>

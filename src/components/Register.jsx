@@ -3,6 +3,8 @@ import { useState } from "react";
 import axios from "axios";
 
 const Register = () => {
+  const API = import.meta.env.VITE_API_URL;
+
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [rePassword, setRePassword] = useState("");
@@ -31,7 +33,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post("http://localhost:3000/auth/register", formData, {
+      await axios.post(`${API}/auth/register`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

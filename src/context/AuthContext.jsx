@@ -4,6 +4,8 @@ import axios from "axios";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const API = import.meta.env.VITE_API_URL;
+
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -12,7 +14,7 @@ export const AuthProvider = ({ children }) => {
       if (!token) return;
 
       try {
-        const res = await axios.get("http://localhost:3000/auth/me", {
+        const res = await axios.get(`${API}/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
