@@ -43,12 +43,14 @@ const Register = () => {
       setPassword("");
       setRePassword("");
       setProfileImage("");
+      setPreviewUrl("");
     } catch (err) {
       alert(err.response.data.message);
       setUserName("");
       setPassword("");
       setRePassword("");
       setProfileImage("");
+      setPreviewUrl("");
     }
   };
 

@@ -17,6 +17,7 @@ const Lobby = () => {
   const [showModal, setShowModal] = useState(false);
   const [ranking, setRanking] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [connectedUsers, setConnectedUsers] = useState([]);
 
   const navigate = useNavigate();
 
@@ -73,6 +74,24 @@ const Lobby = () => {
     fetchRooms();
   }, []);
 
+  useEffect(() => {
+    const fetchConnectedUsers = async () => {
+      try {
+        const res = await axios.get(`${API}/connected_users`);
+        setConnectedUsers(res.data.connectedUsers);
+      } catch (err) {
+        console.error("접속자 목록 조회 실패:", err);
+      }
+    };
+
+    fetchConnectedUsers();
+
+    // 3초마다 polling
+    const intervalId = setInterval(fetchConnectedUsers, 3000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const handleCreateRoom = (totalPlayer) => {
     console.log("🟨 생성 버튼 클릭됨", totalPlayer); // 디버깅 로그
     socket.emit("create_room", { totalPlayer });
@@ -122,14 +141,14 @@ const Lobby = () => {
           <div className="lobby-users">
             <h5 className="lobby-h5">대기방 접속자 목록</h5>
             <ul className="lobby-users-list">
-              {users.map((a) => {
+              {connectedUsers.map((a) => {
                 return (
-                  <li className="lobby-users-list-li" key={a.UID}>
+                  <li className="lobby-users-list-li" key={a.userId}>
                     <img
                       className="lobby-users-list-center-image"
-                      src={a.PROFILE_IMG}
+                      src={`${API}${a.profileImg}`}
                     />
-                    {a.USERNAME}
+                    {a.userName}
                   </li>
                 );
               })}
