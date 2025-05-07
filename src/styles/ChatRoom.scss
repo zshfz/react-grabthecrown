@@ -159,6 +159,21 @@
         border-radius: 10px 10px 0 0;
         padding: 5px;
       }
+
+      .chat-room-messages {
+        margin: 10px 0 10px 5px;
+        overflow-y: auto;
+        max-height: 90%;
+        .chat-message-self {
+          list-style: none;
+          margin: 5px;
+        }
+
+        .chat-message-other {
+          list-style: none;
+          margin: 5px;
+        }
+      }
     }
 
     .chat-room-input-container {
@@ -176,16 +191,13 @@
     }
 
     .start-exit-button-container {
-      .chat-room-start-button {
-        @include blue-button-style;
-        width: 100%;
-        margin: 3px;
-      }
-
+      display: flex;
+      justify-content: center;
       .chat-room-exit-button {
         @include red-button-style;
-        width: 100%;
-        margin: 3px;
+        width: 95%;
+        height: 40px;
+        margin-top: 15px;
       }
     }
   }

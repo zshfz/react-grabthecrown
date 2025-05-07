@@ -1,15 +1,17 @@
 // src/pages/ChatRoom.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import socket from "../socket";
 import UserCard from "../components/UserCard";
 import "../styles/ChatRoom.scss";
+import { AuthContext } from "../context/AuthContext";
 import quizList from "../data/quizList"; // 임시 데이터
 
 const ChatRoom = () => {
   const QUIZ_TIME = 20;
   const { id: roomId } = useParams();
+  const { user: currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
 
@@ -18,7 +20,11 @@ const ChatRoom = () => {
   const [isGameStart, setIsGameStart] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState("");
+  const [chatMessage, setChatMessage] = useState([]); //수신된 메시지 목록
+  const [inputMessage, setInputMessage] = useState(""); //사용자가 입력중인 메시지
   const currentQuiz = quizList[currentIndex];
+
+  const chatEndRef = useRef(null); //채팅창 스크롤 자동으로 내려가도록
 
   // 1) 방 입장 시 초기 참가자 불러오기 (try/catch)
   useEffect(() => {
@@ -110,10 +116,49 @@ const ChatRoom = () => {
     return () => clearInterval(intervalId);
   }, [API, roomId, navigate]);
 
+  //채팅 이벤트 바인딩
+  useEffect(() => {
+    const handleIncoming = ({ userId, userName, message }) => {
+      setChatMessage((prev) => [...prev, { userId, userName, message }]);
+    };
+    const handleBlocked = ({ message }) => {
+      alert(message);
+    };
+
+    socket.on("chat_message", handleIncoming);
+    socket.on("chat_blocked", handleBlocked);
+
+    return () => {
+      socket.off("chat_message", handleIncoming);
+      socket.off("chat_blocked", handleBlocked);
+    };
+  }, []);
+
+  //채팅창 스크롤 자동으로 내려가도록
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessage]);
+
   // ① 나가기 버튼 핸들러
   const handleLeave = () => {
     socket.emit("leave_room", { roomId: Number(roomId) });
     navigate("/lobby");
+  };
+
+  //메시지 전송 핸들러
+  const handleSendMessage = () => {
+    const trimmed = inputMessage.trim();
+    if (!trimmed) return;
+    socket.emit("chat_message", { roomId: Number(roomId), message: trimmed });
+    setInputMessage("");
+  };
+
+  //엔터키로도 메시지 전송할 수 있도록
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (
@@ -165,7 +210,7 @@ const ChatRoom = () => {
             </>
           ) : (
             <h4 className="chat-room-guide-instruction">
-              게임 시작 버튼을 눌러 게임을 시작하세요!
+              방 인원이 다 차면 자동으로 게임이 시작합니다!
             </h4>
           )}
         </div>
@@ -179,21 +224,35 @@ const ChatRoom = () => {
       <div className="chat-room-right">
         <div className="chat-room-chat-area">
           <h4 className="chat-room-chat-area-header">채팅 목록</h4>
+          <ul className="chat-room-messages">
+            {chatMessage.map((a, i) => (
+              <li
+                key={i}
+                className={
+                  a.userId === currentUser?.userId
+                    ? "chat-message-self"
+                    : "chat-message-other"
+                }
+              >
+                <strong>{a.userName}:</strong> {a.message}
+              </li>
+            ))}
+            <div ref={chatEndRef} />
+          </ul>
         </div>
         <div className="chat-room-input-container">
           <textarea
             className="chat-room-textarea"
             placeholder="메시지를 입력하세요."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyDown={handleKeyPress}
           />
-          <button className="chat-room-button">전송</button>
+          <button className="chat-room-button" onClick={handleSendMessage}>
+            전송
+          </button>
         </div>
         <div className="start-exit-button-container">
-          <button
-            className="chat-room-start-button"
-            onClick={() => setIsGameStart(true)}
-          >
-            게임시작
-          </button>
           <button className="chat-room-exit-button" onClick={handleLeave}>
             나가기
           </button>
