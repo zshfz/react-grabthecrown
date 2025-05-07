@@ -160,7 +160,7 @@ const Lobby = () => {
             </ul>
           </div>
           <div className="lobby-users">
-            <h5 className="lobby-h5">대기방 접속자 목록</h5>
+            <h5 className="lobby-h5">접속자 목록</h5>
             <ul className="lobby-users-list">
               {connectedUsers.map((a) => {
                 return (

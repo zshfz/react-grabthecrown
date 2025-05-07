@@ -6,10 +6,9 @@ import socket from "../socket";
 import UserCard from "../components/UserCard";
 import "../styles/ChatRoom.scss";
 import { AuthContext } from "../context/AuthContext";
-import quizList from "../data/quizList"; // 임시 데이터
 
 const ChatRoom = () => {
-  const QUIZ_TIME = 20;
+  const QUIZ_TIME = 5;
   const { id: roomId } = useParams();
   const { user: currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -18,13 +17,75 @@ const ChatRoom = () => {
   const [players, setPlayers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(QUIZ_TIME);
   const [isGameStart, setIsGameStart] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState("");
+  const [selectedChoice, setSelectedChoice] = useState(null);
   const [chatMessage, setChatMessage] = useState([]); //수신된 메시지 목록
   const [inputMessage, setInputMessage] = useState(""); //사용자가 입력중인 메시지
-  const currentQuiz = quizList[currentIndex];
+  const [countdown, setCountdown] = useState(null); //백엔드에서 보내준 시간 초
+  const [currentRound, setCurrentRound] = useState(null); //현재 라운드
+  const [questionNumber, setQuestionNumber] = useState(null); //현재 문제 수
+  const [hasSubmitted, setHasSubmitted] = useState(false); //문제당 답안 제출 했냐?
+  const [questionText, setQuestionText] = useState(null);
+  const [nextRound, setNextRound] = useState(null); //라운다 마다의 텀 동안 보여줄 메시지 관리 state
+  const [options, setOptions] = useState([]);
 
   const chatEndRef = useRef(null); //채팅창 스크롤 자동으로 내려가도록
+
+  //UserCard 점수 바로바로 반영되도록
+  // ChatRoom.jsx 안, 다른 useEffect 훅들 아래에 추가
+  useEffect(() => {
+    const onScoreUpdated = ({ userId, score }) => {
+      setPlayers((prev) =>
+        prev.map((p) =>
+          p.userId === userId
+            ? { ...p, gameScore: score } // gameScore 속성 추가/갱신
+            : p
+        )
+      );
+    };
+    socket.on("score_updated", onScoreUpdated);
+    return () => socket.off("score_updated", onScoreUpdated);
+  }, []);
+
+  //게임 시작 이벤트 받기
+  useEffect(() => {
+    const onGameStarted = () => {
+      setIsGameStart(true);
+    };
+    socket.on("game_started", onGameStarted);
+    return () => {
+      socket.off("game_started", onGameStarted);
+    };
+  }, []);
+
+  //백엔드에서 보내준 시간 초
+  useEffect(() => {
+    const onCountdown = ({ seconds }) => {
+      if (seconds <= 0) {
+        setCountdown(null);
+      } else {
+        setCountdown(seconds);
+      }
+    };
+    socket.on("countdown", onCountdown);
+    return () => {
+      socket.off("countdown", onCountdown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onNewQuestion = ({ round, number, text, options: opts }) => {
+      setCurrentRound(round); // 🧭 라운드
+      setQuestionNumber(number); // 📄 문제 순번
+      setQuestionText(text);
+      setOptions(opts);
+      setCountdown(null);
+      setTimeLeft(QUIZ_TIME);
+      setSelectedChoice(null);
+      setHasSubmitted(false);
+    };
+    socket.on("new_question", onNewQuestion);
+    return () => socket.off("new_question", onNewQuestion);
+  }, []);
 
   // 1) 방 입장 시 초기 참가자 불러오기 (try/catch)
   useEffect(() => {
@@ -67,20 +128,15 @@ const ChatRoom = () => {
     };
   }, [API, roomId]);
 
-  // 퀴즈 타이머
+  // 퀴즈 타이머 (문제마다 재실행)
   useEffect(() => {
-    if (!isGameStart) return;
+    if (!isGameStart || questionText == null) return;
+    setTimeLeft(QUIZ_TIME); // 새 문제마다 20초 재설정
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setTimeLeft((prev) => (prev <= 1 ? clearInterval(timer) || 0 : prev - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [isGameStart]);
+  }, [isGameStart, questionText]);
 
   // ② 서버가 강제종료(game_forced_end) 또는 정상종료(game_finished) 알리면
   useEffect(() => {
@@ -134,6 +190,34 @@ const ChatRoom = () => {
     };
   }, []);
 
+  // 2) 기존 채팅 & 금칙어 이벤트 훅 아래에 추가
+  // ChatRoom.jsx
+  useEffect(() => {
+    const handleGameEvent = ({ message }) => {
+      console.log("🏷️ [game_event] received:", message);
+      setChatMessage((prev) => [
+        ...prev,
+        { userId: null, userName: "SYSTEM", message },
+      ]);
+    };
+    socket.on("game_event", handleGameEvent);
+    return () => {
+      socket.off("game_event", handleGameEvent);
+    };
+  }, []);
+
+  //라운드 마다 텀
+  useEffect(() => {
+    const handleRoundStarted = ({ round }) => {
+      setNextRound(round); // ➕ 라운드 번호 저장
+      setTimeout(() => setNextRound(null), 5000); // 5초 뒤 메시지 숨김
+    };
+    socket.on("round_started", handleRoundStarted);
+    return () => {
+      socket.off("round_started", handleRoundStarted);
+    };
+  }, []);
+
   //채팅창 스크롤 자동으로 내려가도록
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -161,11 +245,31 @@ const ChatRoom = () => {
     }
   };
 
+  //답안 제출 핸들러
+  const handleSubmitAnswer = () => {
+    if (selectedChoice === null) {
+      return alert("답을 선택해주세요.");
+    }
+    socket.emit("submit_answer", {
+      roomId: Number(roomId),
+      answerIndex: selectedChoice,
+    });
+    setHasSubmitted(true);
+  };
+
   return (
     <div className="chat-room">
       <div className="chat-room-left">
         <div className="chat-room-left-top">
-          {isGameStart ? (
+          {countdown != null ? (
+            <h2 className="chat-room-countdown">
+              {countdown}초 뒤 게임이 시작됩니다!
+            </h2>
+          ) : nextRound != null ? (
+            <h2 className="chat-room-countdown">
+              곧 {nextRound}라운드가 시작됩니다!
+            </h2>
+          ) : isGameStart ? (
             <>
               {/* 타이머 */}
               <div className="chat-room-timer-container">
@@ -177,19 +281,14 @@ const ChatRoom = () => {
               </div>
               {/* 진행도 */}
               <div className="chat-room-progress">
-                <h1>{`${quizList.length > 0 ? `라운드 ${1}` : ""}`}</h1>
-                <p>
-                  [{currentIndex + 1} / {quizList.length}]
-                </p>
+                🧭 라운드 {currentRound} • 📄 문제 {questionNumber}
               </div>
               <div className="chat-room-divider" />
               {/* 퀴즈 문항 */}
               <div className="chat-room-quiz-container">
-                <h1 className="chat-room-quiz-question">
-                  Q. {currentQuiz.QUESTION}
-                </h1>
+                <h1 className="chat-room-quiz-question">Q. {questionText}</h1>
                 <ul className="chat-room-quiz-choice-container">
-                  {currentQuiz.OPTIONS.map((opt, i) => (
+                  {options.map((opt, i) => (
                     <li
                       key={i}
                       className={
@@ -199,12 +298,19 @@ const ChatRoom = () => {
                       }
                       onClick={() => setSelectedChoice(i)}
                     >
-                      {i + 1}. {opt.CHOICE}
+                      {i + 1}. {opt}
                     </li>
                   ))}
                 </ul>
                 <div className="chat-room-quiz-submit">
-                  <button className="chat-room-quiz-submit-button">제출</button>
+                  <button
+                    className="chat-room-quiz-submit-button"
+                    onClick={handleSubmitAnswer}
+                    disabled={hasSubmitted}
+                    style={{ opacity: hasSubmitted ? 0.5 : 1 }}
+                  >
+                    {hasSubmitted ? "제출 완료" : "제출"}
+                  </button>
                 </div>
               </div>
             </>
