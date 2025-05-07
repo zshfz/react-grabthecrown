@@ -107,7 +107,19 @@ const Lobby = () => {
     setShowModal(false);
   };
 
-  const handleJoinRoom = (roomId) => {
+  const handleJoinRoom = (room) => {
+    const { roomId, waitingPlayer, totalPlayer, isActive } = room;
+
+    if (isActive) {
+      alert("이미 게임이 시작된 방입니다.");
+      return;
+    }
+    if (waitingPlayer >= totalPlayer) {
+      alert("이미 인원수가 가득 찬 방입니다.");
+      return;
+    }
+
+    // 조건 통과하면 소켓 입장
     socket.emit("join_room", { roomId });
   };
 
@@ -190,7 +202,7 @@ const Lobby = () => {
                   className="lobby-room-list"
                   key={a.roomId}
                   onClick={() => {
-                    handleJoinRoom(a.roomId);
+                    handleJoinRoom(a);
                   }}
                 >
                   <RoomCard a={a} />
