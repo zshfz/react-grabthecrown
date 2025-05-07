@@ -126,6 +126,8 @@
     }
 
     .lobby-room-list-container {
+      overflow-y: auto;
+      max-height: 615px;
       .lobby-room-list {
         display: flex;
         flex-wrap: wrap;
