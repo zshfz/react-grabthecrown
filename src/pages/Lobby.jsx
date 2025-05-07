@@ -1,7 +1,5 @@
 import RoomCard from "../components/RoomCard";
 import "../styles/Lobby.scss";
-import users from "../data/users"; //더미데이터
-import gameRoom from "../data/gameRoom"; //더미데이터
 import ModalComponent from "../components/ModalComponent";
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +21,8 @@ const Lobby = () => {
 
   useEffect(() => {
     socket.on("room_created", (roomInfo) => {
-      console.log("✅ 방 생성됨:", roomInfo);
+      // 리스트에 새 방 추가
+      setRooms((prev) => [...prev, roomInfo]);
       navigate(`/chat-room/${roomInfo.roomId}`);
     });
 
@@ -41,10 +40,16 @@ const Lobby = () => {
       navigate(`/chat-room/${roomId}`);
     });
 
+    // 방 삭제 알림 오면 리스트에서 제거
+    socket.on("room_deleted", ({ roomId }) => {
+      setRooms((prev) => prev.filter((r) => r.roomId !== roomId));
+    });
+
     return () => {
       socket.off("room_created");
       socket.off("room_state_update");
       socket.off("joined_room");
+      socket.off("room_deleted");
     };
   }, [navigate]);
 
@@ -61,6 +66,10 @@ const Lobby = () => {
       }
     };
 
+    fetchRanking();
+  }, [API]);
+
+  useEffect(() => {
     const fetchRooms = async () => {
       try {
         const res = await axios.get(`${API}/gameroom`);
@@ -69,10 +78,10 @@ const Lobby = () => {
         console.error("방 목록 조회 실패:", err);
       }
     };
-
-    fetchRanking();
     fetchRooms();
-  }, []);
+    const id = setInterval(fetchRooms, 3000);
+    return () => clearInterval(id);
+  }, [API]);
 
   useEffect(() => {
     const fetchConnectedUsers = async () => {
