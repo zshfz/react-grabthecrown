@@ -6,7 +6,6 @@ import socket from "../socket";
 import UserCard from "../components/UserCard";
 import "../styles/ChatRoom.scss";
 import quizList from "../data/quizList"; // 임시 데이터
-import gameRoom from "../data/gameRoom"; // 임시 데이터
 
 const ChatRoom = () => {
   const QUIZ_TIME = 20;
@@ -14,11 +13,53 @@ const ChatRoom = () => {
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
 
+  const [players, setPlayers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(QUIZ_TIME);
   const [isGameStart, setIsGameStart] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState("");
   const currentQuiz = quizList[currentIndex];
+
+  // 1) 방 입장 시 초기 참가자 불러오기 (try/catch)
+  useEffect(() => {
+    socket.emit("join_room", { roomId: Number(roomId) });
+
+    const fetchPlayers = async () => {
+      try {
+        const res = await axios.get(`${API}/gameroom/${roomId}/players`);
+        console.log("▶ API response:", res.data);
+        setPlayers(res.data);
+      } catch (err) {
+        console.error("유저 목록 조회 실패:", err);
+        alert("참가자 목록을 불러오는 데 실패했습니다.");
+      }
+    };
+    fetchPlayers();
+  }, [API, roomId]);
+
+  // 2) 소켓 이벤트로 참가/퇴장 실시간 반영 (try/catch 내부 fetch)
+  useEffect(() => {
+    const handleUserJoined = async () => {
+      try {
+        const res = await axios.get(`${API}/gameroom/${roomId}/players`);
+        setPlayers(res.data);
+      } catch (err) {
+        console.error("유저 목록 갱신 실패:", err);
+      }
+    };
+
+    const handleUserLeft = ({ userId }) => {
+      setPlayers((prev) => prev.filter((p) => p.userId !== userId));
+    };
+
+    socket.on("user_joined", handleUserJoined);
+    socket.on("user_left", handleUserLeft);
+
+    return () => {
+      socket.off("user_joined", handleUserJoined);
+      socket.off("user_left", handleUserLeft);
+    };
+  }, [API, roomId]);
 
   // 퀴즈 타이머
   useEffect(() => {
@@ -34,12 +75,6 @@ const ChatRoom = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, [isGameStart]);
-
-  // ① 나가기 버튼 핸들러
-  const handleLeave = () => {
-    socket.emit("leave_room", { roomId: Number(roomId) });
-    navigate("/lobby");
-  };
 
   // ② 서버가 강제종료(game_forced_end) 또는 정상종료(game_finished) 알리면
   useEffect(() => {
@@ -74,6 +109,12 @@ const ChatRoom = () => {
     }, 3000);
     return () => clearInterval(intervalId);
   }, [API, roomId, navigate]);
+
+  // ① 나가기 버튼 핸들러
+  const handleLeave = () => {
+    socket.emit("leave_room", { roomId: Number(roomId) });
+    navigate("/lobby");
+  };
 
   return (
     <div className="chat-room">
@@ -129,9 +170,8 @@ const ChatRoom = () => {
           )}
         </div>
         <div className="chat-room-left-bottom">
-          {/* 임시 유저 리스트 */}
-          {gameRoom.map((u) => (
-            <UserCard key={u.GID} a={u} />
+          {players.map((a) => (
+            <UserCard key={a.userId} a={a} />
           ))}
         </div>
       </div>
