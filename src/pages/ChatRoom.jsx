@@ -140,16 +140,17 @@ const ChatRoom = () => {
 
   // ② 서버가 강제종료(game_forced_end) 또는 정상종료(game_finished) 알리면
   useEffect(() => {
-    socket.on("game_forced_end", ({ message }) => {
+    const handleForcedEnd = ({ message }) => {
       alert(message);
       navigate("/lobby");
-    });
+    };
+    socket.on("game_forced_end", handleForcedEnd);
     socket.on("game_finished", ({ message }) => {
       alert(message);
       navigate("/lobby");
     });
     return () => {
-      socket.off("game_forced_end");
+      socket.off("game_forced_end", handleForcedEnd);
       socket.off("game_finished");
     };
   }, [navigate]);
