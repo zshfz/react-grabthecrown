@@ -73,6 +73,17 @@ const ChatRoom = () => {
   }, []);
 
   useEffect(() => {
+    const handleAboutToDelete = ({ message }) => {
+      console.log("[client] received room_about_to_delete:", message);
+      alert(message);
+    };
+    socket.on("room_about_to_delete", handleAboutToDelete);
+    return () => {
+      socket.off("room_about_to_delete", handleAboutToDelete);
+    };
+  }, []);
+
+  useEffect(() => {
     const onNewQuestion = ({ round, number, text, options: opts }) => {
       setCurrentRound(round); // 🧭 라운드
       setQuestionNumber(number); // 📄 문제 순번
@@ -141,7 +152,6 @@ const ChatRoom = () => {
   // ② 서버가 강제종료(game_forced_end) 또는 정상종료(game_finished) 알리면
   useEffect(() => {
     const handleForcedEnd = ({ message }) => {
-      alert(message);
       navigate("/lobby");
     };
     socket.on("game_forced_end", handleForcedEnd);
