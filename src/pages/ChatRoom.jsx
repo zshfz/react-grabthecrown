@@ -75,14 +75,16 @@ const ChatRoom = () => {
 
   useEffect(() => {
     const handleAboutToDelete = ({ message }) => {
-      console.log("[client] received room_about_to_delete:", message);
-      alert(message);
+      setChatMessage((prev) => [
+        ...prev,
+        { userId: null, userName: "SYSTEM", message },
+      ]);
     };
     socket.on("room_about_to_delete", handleAboutToDelete);
     return () => {
       socket.off("room_about_to_delete", handleAboutToDelete);
     };
-  }, []);
+  }, [roomId]);
 
   useEffect(() => {
     const onNewQuestion = ({ round, number, text, options: opts }) => {
@@ -153,16 +155,17 @@ const ChatRoom = () => {
   // ② 서버가 강제종료(game_forced_end) 또는 정상종료(game_finished) 알리면
   useEffect(() => {
     const handleForcedEnd = ({ message }) => {
-      navigate("/lobby");
+      // 1) 채팅창에 SYSTEM 메시지로 띄우기
+      setChatMessage((prev) => [
+        ...prev,
+        { userId: null, userName: "SYSTEM", message },
+      ]);
+      // 2) 잠깐 텀 준 뒤 로비로 이동
+      setTimeout(() => navigate("/lobby"), 1000);
     };
     socket.on("game_forced_end", handleForcedEnd);
-    socket.on("game_finished", ({ message }) => {
-      alert(message);
-      navigate("/lobby");
-    });
     return () => {
       socket.off("game_forced_end", handleForcedEnd);
-      socket.off("game_finished");
     };
   }, [navigate]);
 
@@ -186,11 +189,17 @@ const ChatRoom = () => {
 
   //채팅 이벤트 바인딩
   useEffect(() => {
+    // 1) 일반 채팅 메시지
     const handleIncoming = ({ userId, userName, message }) => {
       setChatMessage((prev) => [...prev, { userId, userName, message }]);
     };
+
+    // 2) 금칙어 차단 메시지 → SYSTEM으로 표시
     const handleBlocked = ({ message }) => {
-      alert(message);
+      setChatMessage((prev) => [
+        ...prev,
+        { userId: null, userName: "SYSTEM", message },
+      ]);
     };
 
     socket.on("chat_message", handleIncoming);
