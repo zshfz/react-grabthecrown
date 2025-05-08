@@ -14,6 +14,7 @@ const ChatRoom = () => {
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
 
+  const [isComposing, setIsComposing] = useState(false); //엔터키로 채팅 쳣을 때 뒤에 한글자 또 입력되는거 방지
   const [players, setPlayers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(QUIZ_TIME);
   const [isGameStart, setIsGameStart] = useState(false);
@@ -248,13 +249,20 @@ const ChatRoom = () => {
     setInputMessage("");
   };
 
-  //엔터키로도 메시지 전송할 수 있도록
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  // ② Enter 처리 수정
+  const handleKeyDown = (e) => {
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey &&
+      !isComposing // ← 조합 중이면 무시
+    ) {
       e.preventDefault();
       handleSendMessage();
     }
   };
+
+  const handleCompositionStart = () => setIsComposing(true); //채팅 뒤에 한글자 또 쳐지는거 방지
+  const handleCompositionEnd = () => setIsComposing(false); //채팅 뒤에 한글자 또 쳐지는거 방지
 
   //답안 제출 핸들러
   const handleSubmitAnswer = () => {
@@ -363,7 +371,9 @@ const ChatRoom = () => {
             placeholder="메시지를 입력하세요."
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
+            onKeyDown={handleKeyDown}
           />
           <button className="chat-room-button" onClick={handleSendMessage}>
             전송
